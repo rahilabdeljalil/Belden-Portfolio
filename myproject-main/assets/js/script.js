@@ -92,31 +92,53 @@ addEventOnElements(tiltElements, "mouseout", function () {
 /**
  * Tab content
  */
-
+// Get all tab buttons and content sections
 const tabBtns = document.querySelectorAll("[data-tab-btn]");
 const tabContents = document.querySelectorAll("[data-tab-content]");
 
-let lastActiveTabBtn = tabBtns[0];
-let lastActiveTabContent = tabContents[0];
+// Track the last active elements per tab container
+const activeElements = new Map();
 
-const filterContent = function () {
-
-  if (!(lastActiveTabBtn === this)) {
-
-    lastActiveTabBtn.classList.remove("active");
-    lastActiveTabContent.classList.remove("active");
-
-    this.classList.add("active");
-    lastActiveTabBtn = this;
-
-    const currentTabContent = document.querySelector(`[data-tab-content="${this.dataset.tabBtn}"]`);
-
-    currentTabContent.classList.add("active");
-    lastActiveTabContent = currentTabContent;
-
+// Initialize first tab in each container as active
+document.querySelectorAll('.tab-container').forEach(container => {
+  const firstBtn = container.querySelector('[data-tab-btn]');
+  const firstContent = container.querySelector('[data-tab-content]');
+  if (firstBtn && firstContent) {
+    firstBtn.classList.add('active');
+    firstContent.classList.add('active');
+    activeElements.set(container, {
+      btn: firstBtn,
+      content: firstContent
+    });
   }
+});
 
-}
+// Add click handlers to all tab buttons
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', function() {
+    // Find the containing tab section
+    const container = this.closest('.tab-container');
+    const currentActive = activeElements.get(container);
+    
+    // Only proceed if clicking a different tab
+    if (currentActive.btn !== this) {
+      // Remove active class from previous elements
+      currentActive.btn.classList.remove('active');
+      currentActive.content.classList.remove('active');
+      
+      // Add active class to new elements
+      this.classList.add('active');
+      const newContent = container.querySelector(`[data-tab-content="${this.dataset.tabBtn}"]`);
+      newContent.classList.add('active');
+      
+      // Update tracking of active elements
+      activeElements.set(container, {
+        btn: this,
+        content: newContent
+      });
+    }
+  });
+});
 
 addEventOnElements(tabBtns, "click", filterContent);
 
@@ -159,3 +181,6 @@ addEventOnElements(hoveredElements, "mouseout", function () {
     cursors[i].classList.remove("hovered");
   }
 });
+
+
+///////
